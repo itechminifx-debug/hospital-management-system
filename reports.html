@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Hospital Management System</title>
+    <style>
+        :root { --bg: #f8fafc; --card: #ffffff; --primary: #0891b2; --success: #059669; --warning: #d97706; --danger: #dc2626; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; }
+        .header { background: white; border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+        .header .brand { font-size: 18px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .header .brand .icon { width: 36px; height: 36px; background: linear-gradient(135deg, #0891b2, #06b6d4); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .header a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 13px; }
+        .main { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
+        .page-header { margin-bottom: 24px; } .page-header h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; text-align: center; }
+        .stat-card .value { font-size: 26px; font-weight: 800; color: var(--text); }
+        .stat-card .label { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; margin-bottom: 20px; }
+        .card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table th { background: #f1f5f9; color: var(--text-light); padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+        .btn { padding: 10px 18px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; background: var(--primary); }
+        @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; } .btn { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="header"><div class="brand"><div class="icon">🏥</div>Hospital<span>Manager</span></div><a href="dashboard.html">← Dashboard</a></div>
+    <div class="main">
+        <div class="page-header"><h1>📊 Hospital Reports</h1></div>
+        <div class="stats-row">
+            <div class="stat-card" style="border-left:4px solid var(--primary);"><div class="value" id="rPatients">0</div><div class="label">Total Patients</div></div>
+            <div class="stat-card" style="border-left:4px solid var(--success);"><div class="value" id="rAppointments">0</div><div class="label">Appointments</div></div>
+            <div class="stat-card" style="border-left:4px solid var(--warning);"><div class="value" id="rRevenue">GHS 0</div><div class="label">Total Revenue</div></div>
+            <div class="stat-card" style="border-left:4px solid var(--danger);"><div class="value" id="rPending">GHS 0</div><div class="label">Pending Payments</div></div>
+            <div class="stat-card" style="border-left:4px solid #8b5cf6;"><div class="value" id="rStaff">0</div><div class="label">Staff</div></div>
+        </div>
+        <div class="card print-area">
+            <h3>📋 System Summary</h3>
+            <table>
+                <tr><td><strong>Total Patients</strong></td><td style="text-align:right;" id="sPatients">0</td></tr>
+                <tr><td><strong>Total Appointments</strong></td><td style="text-align:right;" id="sAppointments">0</td></tr>
+                <tr><td><strong>Total Staff</strong></td><td style="text-align:right;" id="sStaff">0</td></tr>
+                <tr><td><strong>Total Wards</strong></td><td style="text-align:right;" id="sWards">0</td></tr>
+                <tr><td><strong>Drugs in Pharmacy</strong></td><td style="text-align:right;" id="sDrugs">0</td></tr>
+                <tr><td><strong>Lab Tests Done</strong></td><td style="text-align:right;" id="sLab">0</td></tr>
+                <tr><td><strong>Total Revenue</strong></td><td style="text-align:right;color:var(--success);" id="sRevenue">GHS 0</td></tr>
+                <tr><td><strong>Pending Payments</strong></td><td style="text-align:right;color:var(--danger);" id="sPending">GHS 0</td></tr>
+            </table>
+        </div>
+        <button class="btn" onclick="window.print()" style="width:100%;">🖨️ Print Report</button>
+    </div>
+    <script>
+        window.onload = function() {
+            var patients = JSON.parse(localStorage.getItem('hospital_patients')) || [];
+            var appointments = JSON.parse(localStorage.getItem('hospital_appointments')) || [];
+            var staff = JSON.parse(localStorage.getItem('hospital_staff')) || [];
+            var wards = JSON.parse(localStorage.getItem('hospital_wards')) || [];
+            var pharmacy = JSON.parse(localStorage.getItem('hospital_pharmacy')) || [];
+            var lab = JSON.parse(localStorage.getItem('hospital_lab')) || [];
+            var bills = JSON.parse(localStorage.getItem('hospital_billing')) || [];
+            
+            var revenue = bills.reduce(function(s,b){ return s + b.amount; }, 0);
+            var pending = bills.filter(function(b){ return b.paymentStatus === 'Pending'; }).reduce(function(s,b){ return s + b.amount; }, 0);
+            
+            document.getElementById('rPatients').textContent = patients.length;
+            document.getElementById('rAppointments').textContent = appointments.length;
+            document.getElementById('rRevenue').textContent = 'GHS ' + revenue.toLocaleString();
+            document.getElementById('rPending').textContent = 'GHS ' + pending.toLocaleString();
+            document.getElementById('rStaff').textContent = staff.length;
+            
+            document.getElementById('sPatients').textContent = patients.length;
+            document.getElementById('sAppointments').textContent = appointments.length;
+            document.getElementById('sStaff').textContent = staff.length;
+            document.getElementById('sWards').textContent = wards.length;
+            document.getElementById('sDrugs').textContent = pharmacy.length;
+            document.getElementById('sLab').textContent = lab.length;
+            document.getElementById('sRevenue').textContent = 'GHS ' + revenue.toLocaleString();
+            document.getElementById('sPending').textContent = 'GHS ' + pending.toLocaleString();
+        };
+    </script>
+</body>
+</html>
